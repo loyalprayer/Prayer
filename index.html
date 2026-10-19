@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pray to Guanyin</title>
+<style>
+  body { margin:0; background:#000; text-align:center; }
+  #altar { max-height:100vh; max-width:100vw; cursor:pointer; }
+  #count {
+    position:fixed; top:20px; right:20px;
+    color:gold; font-size:40px; font-family:sans-serif;
+    background:rgba(0,0,0,0.5); padding:10px 20px; border-radius:10px;
+  }
+</style>
+</head>
+<body>
+
+<div id="count">🙏 0</div>
+<img id="altar" src="state1.png">
+
+<script>
+  var img = document.getElementById("altar");
+  var countLabel = document.getElementById("count");
+  var state = 1;
+  var count = 0;
+  var busy = false;
+
+  img.onclick = function (e) {
+    if (busy) return;
+
+    if (state === 1) {
+      // click censer -> light incense and candles
+      img.src = "state2.png";
+      state = 2;
+    }
+    else if (state === 2) {
+      // only react if click is on the BOTTOM part of the image
+      var rect = img.getBoundingClientRect();
+      var y = e.clientY - rect.top;
+      if (y > rect.height * 0.6) {          // bottom 40% of picture
+        busy = true;
+        img.src = "state3.png";             // show praying hands
+        count++;
+        countLabel.textContent = "🙏 " + count;
+        setTimeout(function () {            // pause 1 second
+          img.src = "state2.png";           // return to state 2
+          busy = false;
+        }, 1000);
+      }
+    }
+  };
+</script>
+
+</body>
+</html>
