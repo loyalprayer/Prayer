@@ -873,10 +873,10 @@
       if (soundEnabled) playMuyuSound();
     }
 
+ // --- 專屬訂製：1109Hz 真實頻率木魚 (Crisp 1109Hz Muyu) ---
     function playMuyuSound() {
       if (!soundEnabled) return;
       try {
-        // 初始化音訊引擎
         if (!audioCtx) {
           audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
@@ -886,44 +886,67 @@
 
         const now = audioCtx.currentTime;
 
-        // 1. 木魚主體共鳴聲 (圓潤的「卜」聲)
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        
-        // 頻率在 0.08 秒內從 780Hz 滑落到 420Hz，製造空心木頭的立體感
-        osc.frequency.setValueAtTime(1000, now);
-        osc.frequency.exponentialRampToValueAtTime(420, now + 0.08);
+        // 1. 木魚主空腔共鳴：精準鎖定在你的 1109Hz (極短促、不滑音)
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(1140, now); // 敲擊瞬間僅微幅高一點點
+        osc1.frequency.exponentialRampToValueAtTime(1109, now + 0.005); // 0.005秒瞬間定音在 1109Hz
 
-        // 音量包絡線：瞬間敲響，0.12 秒內乾淨收尾
-        gain.gain.setValueAtTime(0.9, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        gain1.gain.setValueAtTime(0.001, now);
+        gain1.gain.linearRampToValueAtTime(0.85, now + 0.002); // 瞬間敲響
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.065); // 0.065秒乾淨收尾，不拖泥帶水
 
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 0.13);
+        osc1.connect(gain1);
+        gain1.connect(audioCtx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.07);
 
-        // 2. 木槌接觸表面的清脆敲擊聲 (極短促的高頻泛音)
-        const clickOsc = audioCtx.createOscillator();
-        const clickGain = audioCtx.createGain();
-        clickOsc.type = 'triangle';
-        clickOsc.frequency.setValueAtTime(1600, now);
-        clickOsc.frequency.exponentialRampToValueAtTime(600, now + 0.02);
+        // 2. 硬木頭腔體第 2 泛音 (1109Hz * 1.56 ≈ 1730Hz，增加木頭的立體感與脆度)
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(1730, now);
 
-        clickGain.gain.setValueAtTime(0.35, now);
-        clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+        gain2.gain.setValueAtTime(0.001, now);
+        gain2.gain.linearRampToValueAtTime(0.25, now + 0.001);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.025); // 泛音極速消失
 
-        clickOsc.connect(clickGain);
-        clickGain.connect(audioCtx.destination);
-        clickOsc.start(now);
-        clickOsc.stop(now + 0.03);
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.start(now);
+        osc2.stop(now + 0.03);
+
+        // 3. 木槌敲擊木魚表面的實體瞬態聲 (0.01秒極短促木擊聲)
+        const bufferSize = audioCtx.sampleRate * 0.01;
+        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
+        }
+
+        const whiteNoise = audioCtx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+
+        const bandpass = audioCtx.createBiquadFilter();
+        bandpass.type = 'bandpass';
+        bandpass.frequency.setValueAtTime(2200, now);
+        bandpass.Q.setValueAtTime(2.5, now);
+
+        const noiseGain = audioCtx.createGain();
+        noiseGain.gain.setValueAtTime(0.5, now);
+
+        whiteNoise.connect(bandpass);
+        bandpass.connect(noiseGain);
+        noiseGain.connect(audioCtx.destination);
+        whiteNoise.start(now);
 
       } catch (e) {
         console.log('Audio error:', e);
       }
     }
-    // --- 數學合成「頌缽 (Singing Bowl)」音效 ---
+
+    // --- 專屬訂製：867Hz 真實頻率頌缽 (867Hz Singing Bowl) ---
     function playBowlSound() {
       if (typeof soundEnabled !== 'undefined' && !soundEnabled) return;
       try {
@@ -931,10 +954,10 @@
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const now = audioCtx.currentTime;
 
-        // 基音 (528Hz 療癒頻率) + 泛音 (1460Hz) 疊加出金屬頌缽的空靈悠長共鳴
-        const freqs = [528, 1460];
-        const gains = [0.6, 0.2];
-        const durations = [3.2, 1.8]; // 餘音繚繞 3.2 秒
+        // 867Hz 主音 + 868.5Hz 微差音 (創造真實頌缽的波紋共鳴感) + 2384Hz 清亮金屬泛音
+        const freqs = [867, 868.5, 2384];
+        const gains = [0.55, 0.35, 0.08];
+        const durations = [3.5, 3.3, 1.2];
 
         freqs.forEach((f, i) => {
           const osc = audioCtx.createOscillator();
@@ -943,7 +966,7 @@
           osc.frequency.setValueAtTime(f, now);
 
           gain.gain.setValueAtTime(0.001, now);
-          gain.gain.linearRampToValueAtTime(gains[i], now + 0.02); // 柔和敲擊感
+          gain.gain.linearRampToValueAtTime(gains[i], now + 0.015);
           gain.gain.exponentialRampToValueAtTime(0.0001, now + durations[i]);
 
           osc.connect(gain);
@@ -953,7 +976,6 @@
         });
       } catch (e) { console.log(e); }
     }
-
     // --- 數學合成「撥動木念珠」微音效 ---
     function playBeadClickSound() {
       if (typeof soundEnabled !== 'undefined' && !soundEnabled) return;
