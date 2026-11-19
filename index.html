@@ -78,11 +78,11 @@
     .scene-img.active {
       opacity: 1;
     }
-	/* 左側擲筊浮動按鈕 */
+    /* 左側上方：擲筊浮動按鈕 */
     #bwei-trigger-btn {
       position: absolute;
       left: 15px;
-      top: 50%;
+      top: 42%; /* 稍微往上移一點，騰出空間給下面的按鈕 */
       transform: translateY(-50%);
       z-index: 10;
       background: rgba(0, 0, 0, 0.5);
@@ -95,7 +95,7 @@
       cursor: pointer;
       backdrop-filter: blur(4px);
       box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-      writing-mode: vertical-rl; /* 讓文字直排，更有傳統韻味 */
+      writing-mode: vertical-rl;
       letter-spacing: 3px;
     }
 
@@ -180,11 +180,11 @@
       cursor: pointer;
       margin: 0 5px;
     }
-	/* 右側求籤浮動按鈕 (與左側擲筊對稱) */
+    /* 左側下方：求籤浮動按鈕 (排在擲筊正下方) */
     #lot-trigger-btn {
       position: absolute;
-      right: 15px;
-      top: 50%;
+      left: 15px; /* 改為靠左對齊 */
+      top: 58%;  /* 放在擲筊按鈕的正下方 */
       transform: translateY(-50%);
       z-index: 10;
       background: rgba(0, 0, 0, 0.5);
@@ -279,6 +279,176 @@
       font-size: 14px;
       cursor: pointer;
     }
+	/* 左側三個浮動按鈕整齊排列 */
+    #bwei-trigger-btn, #lot-trigger-btn, #sutra-trigger-btn {
+      position: absolute;
+      left: 15px;
+      transform: translateY(-50%);
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.55);
+      color: #ffd700;
+      border: 1px solid rgba(255, 215, 0, 0.5);
+      padding: 10px 9px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      writing-mode: vertical-rl;
+      letter-spacing: 2px;
+    }
+    #bwei-trigger-btn  { top: 34%; } /* 上：擲筊 */
+    #lot-trigger-btn   { top: 50%; } /* 中：求籤 */
+    #sutra-trigger-btn { top: 66%; } /* 下：心經 */
+
+    /* 心經彈出視窗 */
+    #sutra-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 20;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(6px);
+    }
+    .sutra-box {
+      background: #18181a;
+      border: 1px solid #d4af37;
+      border-radius: 20px;
+      padding: 18px;
+      color: #fff;
+      width: 92%;
+      max-width: 400px;
+      height: 86vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+    }
+    /* 經文卡拉OK顯示區 */
+    #sutra-text-container {
+      flex: 1;
+      overflow-y: auto;
+      text-align: left;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      margin-bottom: 14px;
+      line-height: 2.0;
+      font-size: 17px;
+      border: 1px solid rgba(255, 215, 0, 0.15);
+      scroll-behavior: smooth;
+    }
+    .sutra-word {
+      display: inline-block;
+      margin-right: 8px;
+      padding: 2px 5px;
+      border-radius: 6px;
+      color: #666; /* 未唸到的經文呈暗灰色 */
+      transition: all 0.2s ease;
+    }
+    .sutra-word.passed {
+      color: #bbb; /* 已經唸過的經文呈亮白色 */
+    }
+    .sutra-word.active {
+      color: #000; /* 正在唸的當前句子：金底黑字粗體發光！ */
+      background: #ffd700;
+      font-weight: bold;
+      transform: scale(1.08);
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
+    }
+    .sutra-br {
+      height: 12px;
+    }
+
+    /* 底部三大法器互動區 (木魚 / 頌缽 / 滑動念珠) */
+    .instruments-bar {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 8px;
+    }
+    .inst-btn {
+      flex: 1;
+      height: 95px;
+      background: radial-gradient(circle, #2c2c2e 0%, #1c1c1e 100%);
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      border-radius: 16px;
+      color: #ffd700;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      transition: transform 0.1s;
+      position: relative;
+      overflow: hidden;
+    }
+    .inst-btn:active {
+      transform: scale(0.92);
+      background: rgba(255, 215, 0, 0.15);
+    }
+    .inst-icon {
+      font-size: 30px;
+      margin-bottom: 4px;
+    }
+
+    /* 3D 檀木念珠滑動軌道 */
+    #bead-track-wrapper {
+      flex: 1;
+      height: 95px;
+      background: #111;
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      touch-action: none; /* 讓手指滑動念珠時不會動到背景 */
+    }
+    /* 貫穿念珠的佛繩 */
+    #bead-track-wrapper::before {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0; left: 50%;
+      width: 2px;
+      background: #8b5a2b;
+      transform: translateX(-50%);
+    }
+    #bead-strip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.18s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    /* 純 CSS 繪製的 3D 立體檀木珠 */
+    .wooden-bead {
+      width: 26px;
+      height: 22px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #cd853f, #8b4513 55%, #3e1f07 95%);
+      box-shadow: 0 3px 5px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.3);
+      z-index: 2;
+    }
+    .bead-label {
+      position: absolute;
+      bottom: 3px;
+      font-size: 11px;
+      color: #ffd700;
+      background: rgba(0,0,0,0.7);
+      padding: 1px 6px;
+      border-radius: 8px;
+      z-index: 3;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -335,6 +505,57 @@
       <div style="text-align: center; padding-top: 5px;">
         <button class="action-btn" onclick="drawLot()">🎋 抽靈籤 (Draw)</button>
         <button class="close-btn" onclick="closeLotModal(event)">關閉</button>
+      </div>
+    </div>
+  </div>
+  <!-- 左側下方的心經按鈕 -->
+  <button id="sutra-trigger-btn" onclick="openSutraModal(event)">📿 心經</button>
+
+  <!-- 心經與法器彈出視窗 -->
+  <div id="sutra-modal" onclick="closeSutraModal(event)">
+    <div class="sutra-box" onclick="event.stopPropagation()">
+      <div class="lot-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>般若波羅蜜多心經</span>
+        <span id="sutra-progress" style="font-size:13px; color:#aaa; font-weight:normal;">0 / 0</span>
+      </div>
+
+      <!-- 卡拉OK經文顯示區 -->
+      <div id="sutra-text-container"></div>
+
+      <!-- 三大法器操作區 -->
+      <div class="instruments-bar">
+        <!-- 1. 木魚按鈕 -->
+        <div class="inst-btn" onclick="triggerSutraStep('muyu')">
+          <div class="inst-icon">🪵</div>
+          <div>敲木魚</div>
+        </div>
+
+        <!-- 2. 頌缽按鈕 -->
+        <div class="inst-btn" onclick="triggerSutraStep('bowl')">
+          <div class="inst-icon">🥣</div>
+          <div>敲頌缽</div>
+        </div>
+
+        <!-- 3. 滑動念珠區 (可下滑或點擊) -->
+        <div id="bead-track-wrapper" 
+             ontouchstart="handleBeadTouchStart(event)" 
+             ontouchend="handleBeadTouchEnd(event)"
+             onclick="triggerSutraStep('bead')">
+          <div id="bead-strip">
+            <div class="wooden-bead"></div>
+            <div class="wooden-bead"></div>
+            <div class="wooden-bead"></div>
+            <div class="wooden-bead"></div>
+            <div class="wooden-bead"></div>
+          </div>
+          <div class="bead-label">👇 撥念珠</div>
+        </div>
+      </div>
+
+      <!-- 底部控制按鈕 -->
+      <div style="text-align: center;">
+        <button class="close-btn" onclick="resetSutraProgress()">🔄 重頭唸</button>
+        <button class="close-btn" onclick="closeSutraModal(event)">關閉</button>
       </div>
     </div>
   </div>
@@ -566,6 +787,195 @@
         fullDiv.style.display = 'none';
         btn.innerText = '📖 展開完整解籤與故事';
       }
+    }
+	// --- 心經卡拉OK導讀與三大法器邏輯 ---
+    // 已幫你把「菩薩觀自在菩薩」中間補上空格，確保每一句完美切開！
+    const SUTRA_LINES = [
+      "南無本師釋迦牟尼佛 南無本師釋迦牟尼佛 南無本師釋迦牟尼佛",
+      "南無大悲觀世音菩薩 南無大悲觀世音菩薩 南無大悲觀世音菩薩",
+      "觀自在菩薩 行深般若波羅蜜多時 照見五蘊皆空 度一切苦厄",
+      "舍利子 色不異空 空不異色 色即是空 空即是色 受想行識 亦復如是",
+      "舍利子 是諸法空相 不生不滅 不垢不淨 不增不減",
+      "是故空中無色 無受想行識 無眼耳鼻舌身意 無色聲香味觸法 無眼界 乃至無意識界",
+      "無無明 亦無無明盡 乃至無老死 亦無老死盡 無苦集滅道 無智亦無得",
+      "以無所得故 菩提薩埵 依般若波羅蜜多故 心無罣礙 無罣礙故 無有恐怖 遠離顛倒夢想 究竟涅槃",
+      "三世諸佛 依般若波羅蜜多故 得阿耨多羅三藐三菩提",
+      "故知般若波羅蜜多 是大神咒 是大明咒 是無上咒 是無等等咒 能除一切苦 真實不虛",
+      "故說般若波羅蜜多咒 即說咒曰",
+      "揭諦揭諦 波羅揭諦 波羅僧揭諦 菩提薩婆訶",
+      "摩訶般若波羅蜜多 摩訶般若波羅蜜多 摩訶般若波羅蜜多"
+    ];
+
+    let sutraWords = [];
+    let currentSutraIndex = -1; // -1 代表還沒開始唸第一句
+
+    function initSutra() {
+      const container = document.getElementById('sutra-text-container');
+      container.innerHTML = '';
+      sutraWords = [];
+      
+      SUTRA_LINES.forEach((line, lineIdx) => {
+        const phrases = line.trim().split(/\s+/);
+        phrases.forEach(phrase => {
+          const span = document.createElement('span');
+          span.className = 'sutra-word';
+          span.innerText = phrase;
+          container.appendChild(span);
+          sutraWords.push(span);
+        });
+        // 段落換行
+        if (lineIdx < SUTRA_LINES.length - 1) {
+          const br = document.createElement('div');
+          br.className = 'sutra-br';
+          container.appendChild(br);
+        }
+      });
+      updateSutraHighlight();
+    }
+    window.addEventListener('DOMContentLoaded', initSutra);
+
+    function openSutraModal(event) {
+      event.stopPropagation();
+      document.getElementById('sutra-modal').style.display = 'flex';
+    }
+
+    function closeSutraModal(event) {
+      if (event) event.stopPropagation();
+      document.getElementById('sutra-modal').style.display = 'none';
+    }
+
+    function resetSutraProgress() {
+      currentSutraIndex = -1;
+      updateSutraHighlight();
+      document.getElementById('sutra-text-container').scrollTop = 0;
+    }
+
+    // 推進一句經文並發光
+    function triggerSutraStep(type) {
+      // 1. 播放對應法器的聲音與動畫
+      if (type === 'muyu') {
+        playMuyuSound();
+      } else if (type === 'bowl') {
+        playBowlSound();
+      } else if (type === 'bead') {
+        animateBeadSlide();
+        playBeadClickSound();
+      }
+
+      if (navigator.vibrate) navigator.vibrate(25);
+
+      // 2. 推進卡拉OK進度
+      currentSutraIndex++;
+      if (currentSutraIndex >= sutraWords.length) {
+        // 唸完最後一句後，再按一下會重頭開始
+        currentSutraIndex = 0;
+      }
+      updateSutraHighlight();
+
+      // 如果剛好唸到最後一句「摩訶般若波羅蜜多」，自動敲一聲頌缽祝賀圓滿！
+      if (currentSutraIndex === sutraWords.length - 1 && type !== 'bowl') {
+        setTimeout(() => playBowlSound(), 300);
+      }
+    }
+
+    function updateSutraHighlight() {
+      if (sutraWords.length === 0) return;
+      sutraWords.forEach((span, idx) => {
+        span.classList.remove('active', 'passed');
+        if (idx < currentSutraIndex) {
+          span.classList.add('passed');
+        } else if (idx === currentSutraIndex) {
+          span.classList.add('active');
+          // 自動把畫面捲動到正在唸的那一句
+          span.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+      document.getElementById('sutra-progress').innerText = 
+        `${Math.max(0, currentSutraIndex + 1)} / ${sutraWords.length}`;
+    }
+
+    // --- 數學合成「頌缽 (Singing Bowl)」音效 ---
+    function playBowlSound() {
+      if (typeof soundEnabled !== 'undefined' && !soundEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+
+        // 基音 (528Hz 療癒頻率) + 泛音 (1460Hz) 疊加出金屬頌缽的空靈悠長共鳴
+        const freqs = [528, 1460];
+        const gains = [0.6, 0.2];
+        const durations = [3.2, 1.8]; // 餘音繚繞 3.2 秒
+
+        freqs.forEach((f, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, now);
+
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(gains[i], now + 0.02); // 柔和敲擊感
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + durations[i]);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + durations[i] + 0.1);
+        });
+      } catch (e) { console.log(e); }
+    }
+
+    // --- 數學合成「撥動木念珠」微音效 ---
+    function playBeadClickSound() {
+      if (typeof soundEnabled !== 'undefined' && !soundEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.04);
+
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.05);
+      } catch (e) { console.log(e); }
+    }
+
+    // --- 念珠手指滑動動畫邏輯 ---
+    let beadTouchStartY = 0;
+
+    function handleBeadTouchStart(e) {
+      beadTouchStartY = e.touches[0].clientY;
+    }
+
+    function handleBeadTouchEnd(e) {
+      const touchEndY = e.changedTouches[0].clientY;
+      // 只要手指有滑動 (無論往下滑或往上滑超過 10px)，就觸發撥念珠
+      if (Math.abs(touchEndY - beadTouchStartY) > 10) {
+        e.preventDefault();
+        triggerSutraStep('bead');
+      }
+    }
+
+    function animateBeadSlide() {
+      const strip = document.getElementById('bead-strip');
+      // 往下滑動一顆珠子的距離 (28px)
+      strip.style.transition = 'transform 0.16s ease-out';
+      strip.style.transform = 'translateY(28px)';
+      
+      // 動畫結束瞬間無縫歸位，製造「無限長串念珠」的視覺錯覺！
+      setTimeout(() => {
+        strip.style.transition = 'none';
+        strip.style.transform = 'translateY(0)';
+      }, 160);
     }
   </script>
 </body>
