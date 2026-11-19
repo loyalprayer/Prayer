@@ -457,7 +457,10 @@
   <div id="ui-bar">
     <div class="stat-box">第 <span id="tap-count">0</span> 拜</div>
     <div class="stat-box">第 <span id="day-count">0</span> 日</div>
-    <button id="reset-btn" onclick="resetDays(event)">重置</button>
+	<div>
+		<button id="sound-btn" onclick="toggleSound(event)" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.4); padding:4px 8px; border-radius:12px; font-size:12px; margin-right:4px; cursor:pointer;">🔊 木魚</button>
+		<button id="reset-btn" onclick="resetDays(event)">重置</button>
+	</div>
   </div>
 <!-- 左側中間的擲筊按鈕 -->
   <button id="bwei-trigger-btn" onclick="openBweiModal(event)">🌙 擲筊</button>
@@ -893,7 +896,71 @@
       document.getElementById('sutra-progress').innerText = 
         `${Math.max(0, currentSutraIndex + 1)} / ${sutraWords.length}`;
     }
+    // --- 數學合成「木魚 (Muyu)」音效系統 (Web Audio API) ---
+    let soundEnabled = true; // 預設開啟木魚聲 (如果你希望進電梯預設靜音，可以改成 false)
+    let audioCtx = null;
 
+    function toggleSound(event) {
+      event.stopPropagation(); // 防止觸發背景拜拜
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('sound-btn');
+      btn.innerText = soundEnabled ? '🔊 木魚' : '🔇 靜音';
+      btn.style.opacity = soundEnabled ? '1' : '0.5';
+      
+      // 切換成開啟時，試敲一下讓你知道有聲音
+      if (soundEnabled) playMuyuSound();
+    }
+
+    function playMuyuSound() {
+      if (!soundEnabled) return;
+      try {
+        // 初始化音訊引擎
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+
+        const now = audioCtx.currentTime;
+
+        // 1. 木魚主體共鳴聲 (圓潤的「卜」聲)
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        
+        // 頻率在 0.08 秒內從 780Hz 滑落到 420Hz，製造空心木頭的立體感
+        osc.frequency.setValueAtTime(1000, now);
+        osc.frequency.exponentialRampToValueAtTime(420, now + 0.08);
+
+        // 音量包絡線：瞬間敲響，0.12 秒內乾淨收尾
+        gain.gain.setValueAtTime(0.9, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.13);
+
+        // 2. 木槌接觸表面的清脆敲擊聲 (極短促的高頻泛音)
+        const clickOsc = audioCtx.createOscillator();
+        const clickGain = audioCtx.createGain();
+        clickOsc.type = 'triangle';
+        clickOsc.frequency.setValueAtTime(1600, now);
+        clickOsc.frequency.exponentialRampToValueAtTime(600, now + 0.02);
+
+        clickGain.gain.setValueAtTime(0.35, now);
+        clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+
+        clickOsc.connect(clickGain);
+        clickGain.connect(audioCtx.destination);
+        clickOsc.start(now);
+        clickOsc.stop(now + 0.03);
+
+      } catch (e) {
+        console.log('Audio error:', e);
+      }
+    }
     // --- 數學合成「頌缽 (Singing Bowl)」音效 ---
     function playBowlSound() {
       if (typeof soundEnabled !== 'undefined' && !soundEnabled) return;
