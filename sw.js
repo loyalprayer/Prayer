@@ -3,9 +3,14 @@ const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
+  './lots_data.js',  
+  './resultT.png',  
+  './resultF.png',  
+  './resultN.png',  
   './state1.png', // ⚠️ 改成你的第一張圖檔名
   './state2.png', // ⚠️ 改成你的第二張圖檔名
   './state3.png'  // ⚠️ 改成你的第三張圖檔名
+  
 ];
 
 // 安裝時：把所有圖片跟網頁強制下載到手機深層快取裡

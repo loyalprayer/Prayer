@@ -180,14 +180,113 @@
       cursor: pointer;
       margin: 0 5px;
     }
+	/* 右側求籤浮動按鈕 (與左側擲筊對稱) */
+    #lot-trigger-btn {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.5);
+      color: #ffd700;
+      border: 1px solid rgba(255, 215, 0, 0.5);
+      padding: 12px 10px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      writing-mode: vertical-rl;
+      letter-spacing: 3px;
+    }
+
+    /* 求籤彈出視窗 */
+    #lot-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 20;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(5px);
+    }
+    .lot-box {
+      background: #1c1c1e;
+      border: 1px solid #d4af37;
+      border-radius: 20px;
+      padding: 20px;
+      color: #fff;
+      width: 90%;
+      max-width: 380px;
+      max-height: 82vh; /* 限制高度，讓長文可以在裡面滑動 */
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+    }
+    #lot-content-area {
+      overflow-y: auto; /* 允許上下滑動閱讀詳解 */
+      text-align: left;
+      margin-bottom: 15px;
+      padding-right: 5px;
+      user-select: text; /* 允許籤文捲動 */
+      -webkit-user-select: text;
+    }
+    .lot-header {
+      text-align: center;
+      color: #ffd700;
+      font-size: 19px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255,215,0,0.3);
+      padding-bottom: 8px;
+    }
+    .lot-poem {
+      background: rgba(212, 175, 55, 0.12);
+      border-left: 3px solid #ffd700;
+      padding: 12px;
+      font-size: 17px;
+      line-height: 1.6;
+      color: #fff;
+      margin-bottom: 12px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .lot-summary {
+      font-size: 15px;
+      color: #ddd;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .lot-full-details {
+      display: none;
+      font-size: 14px;
+      color: #bbb;
+      line-height: 1.6;
+      white-space: pre-wrap; /* 保留原本 Word 的換行排版 */
+      border-top: 1px dashed #555;
+      padding-top: 12px;
+      margin-top: 10px;
+    }
+    .expand-btn {
+      width: 100%;
+      background: rgba(255,255,255,0.1);
+      color: #ffd700;
+      border: 1px solid rgba(255,215,0,0.4);
+      padding: 8px;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
   <!-- 頂部狀態列 -->
   <div id="ui-bar">
-    <div class="stat-box">第 <span id="tap-count">0</span>拜</div>
-    <div class="stat-box">第 <span id="day-count">0</span>日</div>
+    <div class="stat-box">第 <span id="tap-count">0</span> 拜</div>
+    <div class="stat-box">第 <span id="day-count">0</span> 日</div>
     <button id="reset-btn" onclick="resetDays(event)">重置</button>
   </div>
 <!-- 左側中間的擲筊按鈕 -->
@@ -210,6 +309,35 @@
       </div>
     </div>
   </div>
+  <!-- 右側中間的求籤按鈕 -->
+  <button id="lot-trigger-btn" onclick="openLotModal(event)">🎋 求籤</button>
+
+  <!-- 求籤彈出視窗 -->
+  <div id="lot-modal" onclick="closeLotModal(event)">
+    <div class="lot-box" onclick="event.stopPropagation()">
+      <div class="lot-header" id="lot-title">觀音菩薩靈簽</div>
+      
+      <!-- 籤詩內容捲動區 -->
+      <div id="lot-content-area">
+        <div id="lot-placeholder" style="text-align:center; color:#888; padding: 30px 10px;">
+          請在心中默念您的問題或祈求，<br>然後點擊下方「抽靈籤」按鈕。
+        </div>
+        
+        <div id="lot-result-box" style="display:none;">
+          <div class="lot-poem" id="lot-poem"></div>
+          <div class="lot-summary" id="lot-summary"></div>
+          <button class="expand-btn" id="expand-btn" onclick="toggleFullLot()">📖 展開完整解籤與故事</button>
+          <div class="lot-full-details" id="lot-full"></div>
+        </div>
+      </div>
+
+      <!-- 底部按鈕 -->
+      <div style="text-align: center; padding-top: 5px;">
+        <button class="action-btn" onclick="drawLot()">🎋 抽靈籤 (Draw)</button>
+        <button class="close-btn" onclick="closeLotModal(event)">關閉</button>
+      </div>
+    </div>
+  </div>
   <!-- 拜拜畫面 (把全部三張圖疊在一起，用 class 控制顯示哪一張，這樣切換才不會閃白畫面) -->
   <div id="scene-container" onclick="handleScreenTap(event)">
     <!-- ⚠️ 請把這裡的 src 改成你真正的圖片檔名 -->
@@ -217,7 +345,7 @@
     <img id="img-state-1" class="scene-img" src="state2.png" alt="Lit">
     <img id="img-state-2" class="scene-img" src="state3.png" alt="Praying">
   </div>
-
+  <script src="lots_data.js"></script>
   <script>
     let isLit = false; // 記錄是否已經點香
     let tapCount = 0;  // 當次拜拜點擊次數
@@ -344,6 +472,99 @@
       } else {
         img.src = 'resultF.png';
         text.innerHTML = '<strong style="color:#ff3b30; font-size:18px;">【陰筊 (False)】</strong><br>菩薩不允，此事不宜或時機未到。';
+      }
+    }
+// --- 觀音百籤 自動解析與抽籤邏輯 (修正精準版) ---
+    let parsedLots = [];
+
+    function initLotsData() {
+      if (typeof RAW_LOTS_TEXT === 'undefined') return;
+      parsedLots = [];
+      
+      // 修正：只切割帶有「吉凶宮位」的真正籤頭，不會被中間的「整體解籤」誤導！
+      const parts = RAW_LOTS_TEXT.split(/(?=觀音靈簽第\d+簽[^\n]*吉凶宮位)/);
+      
+      parts.forEach(part => {
+        if (part.trim().startsWith('觀音靈簽第') && part.includes('詩曰：')) {
+          const lines = part.trim().split('\n').map(l => l.trim()).filter(l => l !== '');
+          const title = lines[0]; // 第一行：籤名與吉凶
+          
+          const getSection = (startKey, endKey) => {
+            const sIdx = part.indexOf(startKey);
+            if (sIdx === -1) return '';
+            const contentStart = sIdx + startKey.length;
+            const eIdx = part.indexOf(endKey, contentStart);
+            return eIdx !== -1 ? part.substring(contentStart, eIdx).trim() : '';
+          };
+
+          const poem = getSection('詩曰：', '詩意：').split('註：')[0].trim();
+          const meaning = getSection('詩意：', '解曰：').split('註：')[0].trim();
+          const explain = getSection('解曰：', '詳解').split('註：')[0].trim();
+          const essence = getSection('本簽精髓：', '凡事做事：').trim();
+
+          parsedLots.push({
+            title: title,
+            poem: poem,
+            meaning: meaning,
+            explain: explain,
+            essence: essence,
+            fullText: part.trim()
+          });
+        }
+      });
+      console.log('成功載入觀音靈籤共：' + parsedLots.length + ' 籤');
+    }
+    // 網頁載入時自動整理好 100 籤
+    window.addEventListener('DOMContentLoaded', initLotsData);
+
+    function openLotModal(event) {
+      event.stopPropagation();
+      document.getElementById('lot-modal').style.display = 'flex';
+    }
+
+    function closeLotModal(event) {
+      if (event) event.stopPropagation();
+      document.getElementById('lot-modal').style.display = 'none';
+    }
+
+    function drawLot() {
+      if (parsedLots.length === 0) initLotsData();
+      if (parsedLots.length === 0) {
+        alert('題庫載入中，請確認 lots_data.js 已正確建立！');
+        return;
+      }
+
+      if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+
+      // 隨機抽取 1~100 籤
+      const randomIndex = Math.floor(Math.random() * parsedLots.length);
+      const lot = parsedLots[randomIndex];
+
+      document.getElementById('lot-placeholder').style.display = 'none';
+      document.getElementById('lot-result-box').style.display = 'block';
+
+      document.getElementById('lot-title').innerText = lot.title;
+      document.getElementById('lot-poem').innerText = lot.poem;
+      document.getElementById('lot-summary').innerHTML = 
+        `<b>【本簽精髓】</b> ${lot.essence}<br><br>` +
+        `<b>【詩意】</b> ${lot.meaning}<br>` +
+        `<b>【解曰】</b> ${lot.explain}`;
+      
+      document.getElementById('lot-full').innerText = lot.fullText;
+      document.getElementById('lot-full').style.display = 'none';
+      document.getElementById('expand-btn').innerText = '📖 展開完整解籤與故事';
+      document.getElementById('lot-content-area').scrollTop = 0;
+    }
+
+    function toggleFullLot() {
+      const fullDiv = document.getElementById('lot-full');
+      const btn = document.getElementById('expand-btn');
+      if (fullDiv.style.display === 'none') {
+        fullDiv.style.display = 'block';
+        btn.innerText = '🔼 收起完整解籤';
+      } else {
+        fullDiv.style.display = 'none';
+        btn.innerText = '📖 展開完整解籤與故事';
       }
     }
   </script>
