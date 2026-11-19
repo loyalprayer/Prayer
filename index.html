@@ -78,26 +78,7 @@
     .scene-img.active {
       opacity: 1;
     }
-    /* 左側上方：擲筊浮動按鈕 */
-    #bwei-trigger-btn {
-      position: absolute;
-      left: 15px;
-      top: 42%; /* 稍微往上移一點，騰出空間給下面的按鈕 */
-      transform: translateY(-50%);
-      z-index: 10;
-      background: rgba(0, 0, 0, 0.5);
-      color: #ffd700;
-      border: 1px solid rgba(255, 215, 0, 0.5);
-      padding: 12px 10px;
-      border-radius: 16px;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
-      backdrop-filter: blur(4px);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-      writing-mode: vertical-rl;
-      letter-spacing: 3px;
-    }
+
 
     /* 擲筊彈出視窗 (Modal) */
     #bwei-modal {
@@ -180,26 +161,7 @@
       cursor: pointer;
       margin: 0 5px;
     }
-    /* 左側下方：求籤浮動按鈕 (排在擲筊正下方) */
-    #lot-trigger-btn {
-      position: absolute;
-      left: 15px; /* 改為靠左對齊 */
-      top: 58%;  /* 放在擲筊按鈕的正下方 */
-      transform: translateY(-50%);
-      z-index: 10;
-      background: rgba(0, 0, 0, 0.5);
-      color: #ffd700;
-      border: 1px solid rgba(255, 215, 0, 0.5);
-      padding: 12px 10px;
-      border-radius: 16px;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
-      backdrop-filter: blur(4px);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-      writing-mode: vertical-rl;
-      letter-spacing: 3px;
-    }
+
 
     /* 求籤彈出視窗 */
     #lot-modal {
@@ -279,28 +241,31 @@
       font-size: 14px;
       cursor: pointer;
     }
-	/* 左側三個浮動按鈕整齊排列 */
+    /* 底部三個浮動按鈕水平整齊排列 */
     #bwei-trigger-btn, #lot-trigger-btn, #sutra-trigger-btn {
       position: absolute;
-      left: 15px;
-      transform: translateY(-50%);
+      bottom: 30px; /* 距離底部 30px，避開 iPhone 底部橫條 */
+      transform: translateX(-50%); /* 以按鈕中心點對齊 */
       z-index: 10;
-      background: rgba(0, 0, 0, 0.55);
+      background: rgba(0, 0, 0, 0.65);
       color: #ffd700;
       border: 1px solid rgba(255, 215, 0, 0.5);
-      padding: 10px 9px;
-      border-radius: 16px;
-      font-size: 14px;
+      padding: 10px 16px;
+      border-radius: 20px;
+      font-size: 15px;
       font-weight: bold;
       cursor: pointer;
       backdrop-filter: blur(4px);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-      writing-mode: vertical-rl;
-      letter-spacing: 2px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+      writing-mode: horizontal-tb; /* 改回水平橫排文字 */
+      letter-spacing: 1px;
+      white-space: nowrap; /* 防止文字換行 */
     }
-    #bwei-trigger-btn  { top: 34%; } /* 上：擲筊 */
-    #lot-trigger-btn   { top: 50%; } /* 中：求籤 */
-    #sutra-trigger-btn { top: 66%; } /* 下：心經 */
+    
+    /* 左、中、右 均勻分佈在底部 */
+    #bwei-trigger-btn  { left: 22%; } /* 左：🌙 擲筊 */
+    #lot-trigger-btn   { left: 50%; } /* 中：🎋 求籤 */
+    #sutra-trigger-btn { left: 78%; } /* 右：📿 心經 */
 
     /* 心經彈出視窗 */
     #sutra-modal {
@@ -457,10 +422,7 @@
   <div id="ui-bar">
     <div class="stat-box">第 <span id="tap-count">0</span> 拜</div>
     <div class="stat-box">第 <span id="day-count">0</span> 日</div>
-	<div>
-		<button id="sound-btn" onclick="toggleSound(event)" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.4); padding:4px 8px; border-radius:12px; font-size:12px; margin-right:4px; cursor:pointer;">🔊 木魚</button>
-		<button id="reset-btn" onclick="resetDays(event)">重置</button>
-	</div>
+	<button id="reset-btn" onclick="resetDays(event)">重置</button>
   </div>
 <!-- 左側中間的擲筊按鈕 -->
   <button id="bwei-trigger-btn" onclick="openBweiModal(event)">🌙 擲筊</button>
