@@ -78,6 +78,108 @@
     .scene-img.active {
       opacity: 1;
     }
+	/* 左側擲筊浮動按鈕 */
+    #bwei-trigger-btn {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.5);
+      color: #ffd700;
+      border: 1px solid rgba(255, 215, 0, 0.5);
+      padding: 12px 10px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      writing-mode: vertical-rl; /* 讓文字直排，更有傳統韻味 */
+      letter-spacing: 3px;
+    }
+
+    /* 擲筊彈出視窗 (Modal) */
+    #bwei-modal {
+      display: none; /* 預設隱藏 */
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 20;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(5px);
+    }
+    .modal-box {
+      background: #1c1c1e;
+      border: 1px solid #444;
+      border-radius: 24px;
+      padding: 24px;
+      text-align: center;
+      color: #fff;
+      width: 330px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+    .modal-title {
+      margin: 0 0 15px 0;
+      color: #ffd700;
+      font-size: 20px;
+    }
+    /* 固定 295x295 的圖片顯示區 */
+    #bwei-img-container {
+      width: 240px; /* 稍微縮小一點點以適應各種小螢幕手機，保持正方形 */
+      height: 240px;
+      margin: 0 auto 15px auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+      border: 1px dashed rgba(255,255,255,0.15);
+    }
+    #bwei-result-img {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 12px;
+      display: none;
+    }
+    /* 搖晃動畫 */
+    .shake-anim {
+      animation: shake 0.35s ease-in-out;
+    }
+    @keyframes shake {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      25% { transform: rotate(-12deg) scale(1.05); }
+      75% { transform: rotate(12deg) scale(1.05); }
+    }
+    #bwei-result-text {
+      font-size: 16px;
+      min-height: 44px;
+      margin-bottom: 18px;
+      color: #ddd;
+      line-height: 1.4;
+    }
+    .action-btn {
+      background: linear-gradient(135deg, #d4af37, #aa7c11);
+      color: #000;
+      font-weight: bold;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 0 5px;
+    }
+    .close-btn {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 0 5px;
+    }
   </style>
 </head>
 <body>
@@ -88,7 +190,26 @@
     <div class="stat-box">📅 Day <span id="day-count">0</span>/108</div>
     <button id="reset-btn" onclick="resetDays(event)">Reset</button>
   </div>
+<!-- 左側中間的擲筊按鈕 -->
+  <button id="bwei-trigger-btn" onclick="openBweiModal(event)">🌙 擲筊</button>
 
+  <!-- 擲筊彈出視窗 -->
+  <div id="bwei-modal" onclick="closeBweiModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <h3 class="modal-title">請示觀音菩薩</h3>
+      <div id="bwei-img-container">
+        <span id="bwei-placeholder" style="color: #888; padding: 20px; font-size: 14px;">
+          請在心中默念您的問題，<br>然後點擊下方「擲筊」按鈕。
+        </span>
+        <img id="bwei-result-img" src="" alt="Result">
+      </div>
+      <div id="bwei-result-text">準備請示...</div>
+      <div>
+        <button class="action-btn" onclick="castBwei()">🙏 擲筊 (Cast)</button>
+        <button class="close-btn" onclick="closeBweiModal(event)">關閉</button>
+      </div>
+    </div>
+  </div>
   <!-- 拜拜畫面 (把全部三張圖疊在一起，用 class 控制顯示哪一張，這樣切換才不會閃白畫面) -->
   <div id="scene-container" onclick="handleScreenTap(event)">
     <!-- ⚠️ 請把這裡的 src 改成你真正的圖片檔名 -->
@@ -180,6 +301,50 @@
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js');
       });
+    }
+	// --- 擲筊功能邏輯 ---
+    function openBweiModal(event) {
+      event.stopPropagation(); // 避免觸發背景的拜拜
+      document.getElementById('bwei-modal').style.display = 'flex';
+      // 每次打開重置回準備狀態
+      document.getElementById('bwei-result-img').style.display = 'none';
+      document.getElementById('bwei-placeholder').style.display = 'block';
+      document.getElementById('bwei-result-text').innerHTML = '準備請示...';
+    }
+
+    function closeBweiModal(event) {
+      if (event) event.stopPropagation();
+      document.getElementById('bwei-modal').style.display = 'none';
+    }
+
+    function castBwei() {
+      const img = document.getElementById('bwei-result-img');
+      const placeholder = document.getElementById('bwei-placeholder');
+      const text = document.getElementById('bwei-result-text');
+
+      placeholder.style.display = 'none';
+      img.style.display = 'block';
+
+      // 重新觸發搖晃動畫
+      img.classList.remove('shake-anim');
+      void img.offsetWidth; 
+      img.classList.add('shake-anim');
+
+      // 震動回饋
+      if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
+
+      // 計算機率：50% 聖筊(T), 25% 笑筊(N), 25% 陰筊(F)
+      const rand = Math.random();
+      if (rand < 0.5) {
+        img.src = 'resultT.png';
+        text.innerHTML = '<strong style="color:#4cd964; font-size:18px;">【聖筊 (True)】</strong><br>菩薩允杯，方向正確，所求順遂。';
+      } else if (rand < 0.75) {
+        img.src = 'resultN.png';
+        text.innerHTML = '<strong style="color:#ffcc00; font-size:18px;">【笑筊 (Neutral)】</strong><br>菩薩微笑不語，請釐清問題再問一次。';
+      } else {
+        img.src = 'resultF.png';
+        text.innerHTML = '<strong style="color:#ff3b30; font-size:18px;">【陰筊 (False)】</strong><br>菩薩不允，此事不宜或時機未到。';
+      }
     }
   </script>
 </body>
