@@ -1,55 +1,186 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-HK">
 <head>
-<meta charset="UTF-8">
-<title>Pray to Guanyin</title>
-<style>
-  body { margin:0; background:#000; text-align:center; }
-  #altar { max-height:100vh; max-width:100vw; cursor:pointer; }
-  #count {
-    position:fixed; top:20px; right:20px;
-    color:gold; font-size:40px; font-family:sans-serif;
-    background:rgba(0,0,0,0.5); padding:10px 20px; border-radius:10px;
-  }
-</style>
+  <meta charset="UTF-8">
+  <!-- 禁止手機縮放，固定畫面比例 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pray to Guanyin</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none; /* 防止長按選取文字 */
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden; /* 防止畫面上下滑動 */
+      background-color: #000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    
+    /* 頂部資訊列 (浮在圖片上方) */
+    #ui-bar {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      right: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      background: rgba(0, 0, 0, 0.4);
+      padding: 8px 16px;
+      border-radius: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .stat-box {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    #reset-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    /* 圖片容器 */
+    #scene-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .scene-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* 讓圖片填滿手機螢幕 */
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      transition: opacity 0.15s ease-in-out; /* 讓切換有一點點柔和感 */
+      pointer-events: none;
+    }
+    .scene-img.active {
+      opacity: 1;
+    }
+  </style>
 </head>
 <body>
 
-<div id="count">🙏 0</div>
-<img id="altar" src="state1.png">
+  <!-- 頂部狀態列 -->
+  <div id="ui-bar">
+    <div class="stat-box">🙏 <span id="tap-count">0</span></div>
+    <div class="stat-box">📅 Day <span id="day-count">0</span>/108</div>
+    <button id="reset-btn" onclick="resetDays(event)">Reset</button>
+  </div>
 
-<script>
-  var img = document.getElementById("altar");
-  var countLabel = document.getElementById("count");
-  var state = 1;
-  var count = 0;
-  var busy = false;
+  <!-- 拜拜畫面 (把全部三張圖疊在一起，用 class 控制顯示哪一張，這樣切換才不會閃白畫面) -->
+  <div id="scene-container" onclick="handleScreenTap(event)">
+    <!-- ⚠️ 請把這裡的 src 改成你真正的圖片檔名 -->
+    <img id="img-state-0" class="scene-img active" src="state1.jpg" alt="Unlit">
+    <img id="img-state-1" class="scene-img" src="state2.jpg" alt="Lit">
+    <img id="img-state-2" class="scene-img" src="state3.jpg" alt="Praying">
+  </div>
 
-  img.onclick = function (e) {
-    if (busy) return;
+  <script>
+    let isLit = false; // 記錄是否已經點香
+    let tapCount = 0;  // 當次拜拜點擊次數
+    let prayTimer = null;
 
-    if (state === 1) {
-      // click censer -> light incense and candles
-      img.src = "state2.png";
-      state = 2;
+    // 1. 初始化：從手機記憶體讀取「累積天數」
+    let totalDays = parseInt(localStorage.getItem('guanyin_totalDays')) || 0;
+    let lastPrayDate = localStorage.getItem('guanyin_lastDate') || '';
+    document.getElementById('day-count').innerText = totalDays;
+
+    // 取得三張圖片元素
+    const img0 = document.getElementById('img-state-0');
+    const img1 = document.getElementById('img-state-1');
+    const img2 = document.getElementById('img-state-2');
+
+    function showImage(stateIndex) {
+      img0.classList.remove('active');
+      img1.classList.remove('active');
+      img2.classList.remove('active');
+      if (stateIndex === 0) img0.classList.add('active');
+      if (stateIndex === 1) img1.classList.add('active');
+      if (stateIndex === 2) img2.classList.add('active');
     }
-    else if (state === 2) {
-      // only react if click is on the BOTTOM part of the image
-      var rect = img.getBoundingClientRect();
-      var y = e.clientY - rect.top;
-      if (y > rect.height * 0.6) {          // bottom 40% of picture
-        busy = true;
-        img.src = "state3.png";             // show praying hands
-        count++;
-        countLabel.textContent = "🙏 " + count;
-        setTimeout(function () {            // pause 1 second
-          img.src = "state2.png";           // return to state 2
-          busy = false;
-        }, 1000);
+
+    // 2. 處理點擊螢幕的邏輯
+    function handleScreenTap(event) {
+      if (!isLit) {
+        // 第一次點擊：點燃香燭 (切換到圖 2)
+        isLit = true;
+        showImage(1);
+        checkAndAddDay(); // 點香的瞬間，計算今天打卡！
+      } else {
+        // 後續點擊：合十拜拜 (切換到圖 3，計數 +1)
+        tapCount++;
+        document.getElementById('tap-count').innerText = tapCount;
+        showImage(2);
+
+        // 如果手機支援震動，給一點微小的震動回饋 (iOS Safari 不支援，Android 支援)
+        if (navigator.vibrate) navigator.vibrate(30);
+
+        // 0.6 秒後手自動放下來，回到圖 2 (點香狀態)，方便你連續點擊拜拜
+        clearTimeout(prayTimer);
+        prayTimer = setTimeout(() => {
+          showImage(1);
+        }, 600);
       }
     }
-  };
-</script>
 
+    // 3. 檢查並增加天數 (一天只會加一次)
+    function checkAndAddDay() {
+      const today = new Date().toDateString(); // 例如 "Thu Nov 19 2026"
+      if (lastPrayDate !== today) {
+        totalDays++;
+        lastPrayDate = today;
+        localStorage.setItem('guanyin_totalDays', totalDays);
+        localStorage.setItem('guanyin_lastDate', lastPrayDate);
+        document.getElementById('day-count').innerText = totalDays;
+      }
+    }
+
+    // 4. 重置天數按鈕
+    function resetDays(event) {
+      event.stopPropagation(); // 防止觸發背景的拜拜點擊
+      if (confirm('Are you sure you want to reset your prayer days to Day 0?')) {
+        totalDays = 0;
+        lastPrayDate = '';
+        localStorage.setItem('guanyin_totalDays', 0);
+        localStorage.setItem('guanyin_lastDate', '');
+        document.getElementById('day-count').innerText = 0;
+        
+        // 順便把畫面重置回未點香狀態
+        isLit = false;
+        tapCount = 0;
+        document.getElementById('tap-count').innerText = 0;
+        showImage(0);
+      }
+    }
+
+    // 5. 註冊離線服務 (Service Worker)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js');
+      });
+    }
+  </script>
 </body>
 </html>
